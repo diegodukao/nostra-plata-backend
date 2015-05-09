@@ -22,7 +22,7 @@ def not_found(error):
 def unauthorized():
     return make_response(jsonify({'error': 'Unauthorized access'}), 403)
 
-tasks = [
+members = [
     {
         'id': 1,
         'title': u'Buy groceries',
@@ -37,41 +37,41 @@ tasks = [
     }
 ]
 
-task_fields = {
+member_fields = {
     'title': fields.String,
     'description': fields.String,
     'done': fields.Boolean,
-    'uri': fields.Url('task')
+    'uri': fields.Url('member')
 }
 
-class TaskListAPI(Resource):
+class MemberListAPI(Resource):
     decorators = [auth.login_required]
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('title', type=str, required=True,
-                                   help='No task title provided',
+                                   help='No member title provided',
                                    location='json')
         self.reqparse.add_argument('description', type=str, default="",
                                    location='json')
-        super(TaskListAPI, self).__init__()
+        super(MemberListAPI, self).__init__()
 
     def get(self):
-        return {'tasks': [marshal(task, task_fields) for task in tasks]}
+        return {'members': [marshal(member, member_fields) for member in members]}
 
     def post(self):
         args = self.reqparse.parse_args()
-        task = {
-            'id': tasks[-1]['id'] + 1,
+        member = {
+            'id': members[-1]['id'] + 1,
             'title': args['title'],
             'description': args['description'],
             'done': False
         }
-        tasks.append(task)
-        return {'task': marshal(task, task_fields)}, 201
+        members.append(member)
+        return {'member': marshal(member, member_fields)}, 201
 
 
-class TaskAPI(Resource):
+class MemberAPI(Resource):
     decorators = [auth.login_required]
 
     def __init__(self):
@@ -79,35 +79,35 @@ class TaskAPI(Resource):
         self.reqparse.add_argument('title', type=str, location='json')
         self.reqparse.add_argument('description', type=str, location='json')
         self.reqparse.add_argument('done', type=bool, location='json')
-        super(TaskAPI, self).__init__()
+        super(MemberAPI, self).__init__()
 
     def get(self, id):
-        task = [task for task in tasks if task['id'] == id]
-        if len(task) == 0:
+        member = [member for member in members if member['id'] == id]
+        if len(member) == 0:
             abort(404)
-        return {'task': marshal(task[0], task_fields)}
+        return {'member': marshal(member[0], member_fields)}
 
     def put(self, id):
-        task = [task for task in tasks if task['id'] == id]
-        if len(task) == 0:
+        member = [member for member in members if member['id'] == id]
+        if len(member) == 0:
             abort(404)
-        task = task[0]
+        member = member[0]
         args = self.reqparse.parse_args()
         for k, v in args.items():
             if v is not None:
-                task[k] = v
-        return {'task': marshal(task, task_fields)}
+                member[k] = v
+        return {'member': marshal(member, member_fields)}
 
     def delete(self, id):
-        task = [task for task in tasks if task['id'] == id]
-        if len(task) == 0:
+        member = [member for member in members if member['id'] == id]
+        if len(member) == 0:
             abort(404)
-        tasks.remove(task[0])
+        members.remove(member[0])
         return {'result': True}
 
 
-api.add_resource(TaskListAPI, '/nostra-plata/api/v1.0/tasks', endpoint='tasks')
-api.add_resource(TaskAPI, '/nostra-plata/api/v1.0/tasks/<int:id>', endpoint='task')
+api.add_resource(MemberListAPI, '/nostra-plata/api/v1.0/members', endpoint='members')
+api.add_resource(MemberAPI, '/nostra-plata/api/v1.0/members/<int:id>', endpoint='member')
     
 if __name__ == '__main__':
     app.run(debug=True)
