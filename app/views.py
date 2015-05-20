@@ -3,10 +3,10 @@ from flask import Flask, jsonify, abort, make_response
 from flask.ext.restful import Api, Resource, reqparse, fields, marshal
 from flask.ext.httpauth import HTTPBasicAuth
 
-app = Flask(__name__, static_url_path="")
+from app import app
+
 api = Api(app)
 auth = HTTPBasicAuth()
-#app = Flask(__name__)
 
 @auth.get_password
 def get_password(username):
@@ -26,13 +26,13 @@ members = [
     {
         'id': 1,
         'title': u'Buy groceries',
-        'description': u'Milk, Cheese, Pizza, Fruit, Tylenol', 
+        'description': u'Milk, Cheese, Pizza, Fruit, Tylenol',
         'done': False,
     },
     {
         'id': 2,
         'title': u'Learn Python',
-        'description': u'Need to find a good Python tutorial on the web', 
+        'description': u'Need to find a good Python tutorial on the web',
         'done': False,
     }
 ]
@@ -108,6 +108,3 @@ class MemberAPI(Resource):
 
 api.add_resource(MemberListAPI, '/nostra-plata/api/v1.0/members', endpoint='members')
 api.add_resource(MemberAPI, '/nostra-plata/api/v1.0/members/<int:id>', endpoint='member')
-    
-if __name__ == '__main__':
-    app.run(debug=True)
