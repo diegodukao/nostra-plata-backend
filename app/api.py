@@ -3,7 +3,7 @@ from flask import Flask, jsonify, abort, make_response
 from flask.ext.restful import Api, Resource, reqparse, fields, marshal
 from flask.ext.httpauth import HTTPBasicAuth
 
-from app import app
+from app import app, db
 from .models import User, Group, Loan
 
 api = Api(app)
@@ -62,6 +62,35 @@ class LoansGottenAPI(Resource):
 
         return {'loans_gotten': marshal(loans_gotten, loan_fields), 'total': total}
 
+class LoanAPI(Resource):
+
+    def __init__(self):
+        self.reqparse =reqparse.RequestParser()
+        self.reqparse.add_argument('creditor_id', type=int, required=True,
+                            help='No creditor_id provided', location='json')
+        self.reqparse.add_argument('debtor_id', type=int, required=True,
+                            help='No debtor_id provided', location='json')
+        self.reqparse.add_argument('group_id', type=int, required=True,
+                            help='No group_id provided', location='json')
+        self.reqparse.add_argument('amount', type=int, required=True,
+                            help='No amount provided', location='json')
+        super(LoanAPI, self).__init__()
+
+    def post(self):
+        args = self.reqparse.parse_args()
+        loan = Loan(
+            creditor_id=args['creditor_id'],
+            debtor_id=args['debtor_id'],
+            group_id=args['group_id'],
+            amount=args['amount']
+        )
+        db.session.add(loan)
+        db.session.commit()
+
+        return {'loan': marshal(loan, loan_fields)}
+
+
 api.add_resource(GroupMembersAPI, '/nostra-plata/api/v1.0/group-members/<int:id>', endpoint='group-members')
 api.add_resource(LoansGivenAPI, '/nostra-plata/api/v1.0/loans-given/<int:creditor_id>', endpoint='loans-given')
 api.add_resource(LoansGottenAPI, '/nostra-plata/api/v1.0/loans-gotten/<int:debtor_id>', endpoint='loans-gotten')
+api.add_resource(LoanAPI, '/nostra-plata/api/v1.0/loan', endpoint='loan')
