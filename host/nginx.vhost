@@ -1,0 +1,15 @@
+upstream nostra-plata {
+    server unix:/tmp/nostra-plata.sock;
+}
+
+server {
+    listen 80;
+    charset utf-8;
+
+    server_name nostraplata.mobilidade.fm;
+
+    location / {
+        uwsgi_pass nostra-plata;
+        include /opt/nostra-plata/releases/current/host/uwsgi_params;
+    }
+}
