@@ -20,9 +20,9 @@ def live():
 
 @task
 def restart_services():
-    env.user = 'ubuntu'
+    env.user = 'diego'
 
-    sudo('service nginx restart')
+    sudo('/etc/init.d/nginx restart')
     sudo('supervisorctl reload')
 
 
@@ -39,7 +39,7 @@ def remote_clone():
 
 
 def prepare_virtualenv(release='current'):
-    env.user = 'ubuntu'
+    env.user = 'diego'
 
     sudo('pip install virtualenv')
 
