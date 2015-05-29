@@ -90,7 +90,7 @@ class LoanAPI(Resource):
         return {'loan': marshal(loan, loan_fields)}
 
 
-api.add_resource(GroupMembersAPI, '/nostra-plata/api/v1.0/group-members/<int:id>', endpoint='group-members')
-api.add_resource(LoansGivenAPI, '/nostra-plata/api/v1.0/loans-given/<int:creditor_id>', endpoint='loans-given')
-api.add_resource(LoansGottenAPI, '/nostra-plata/api/v1.0/loans-gotten/<int:debtor_id>', endpoint='loans-gotten')
-api.add_resource(LoanAPI, '/nostra-plata/api/v1.0/loan', endpoint='loan')
+api.add_resource(GroupMembersAPI, '/api/v1.0/group-members/<int:id>', endpoint='group-members')
+api.add_resource(LoansGivenAPI, '/api/v1.0/loans-given/<int:creditor_id>', endpoint='loans-given')
+api.add_resource(LoansGottenAPI, '/api/v1.0/loans-gotten/<int:debtor_id>', endpoint='loans-gotten')
+api.add_resource(LoanAPI, '/api/v1.0/loan', endpoint='loan')
