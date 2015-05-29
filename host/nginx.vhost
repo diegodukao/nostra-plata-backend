@@ -1,3 +1,7 @@
+upstream nostra-plata {
+    server unix:/tmp/nostra-plata.sock;
+}
+
 server {
     listen 8000;
     charset utf-8;
@@ -5,11 +9,7 @@ server {
     server_name nostraplata.mobilidade.fm;
 
     location / {
-        proxy_pass http://localhost:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-    location /static {
-        alias /opt/nostra-plata/releases/current/static/;
+        uwsgi_pass nostra-plata;
+        include /opt/nostra-plata/releases/current/host/uwsgi_params;
     }
 }
