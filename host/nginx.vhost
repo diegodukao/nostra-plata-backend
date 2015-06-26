@@ -3,7 +3,7 @@ upstream nostra-plata {
 }
 
 server {
-    listen 80;
+    listen 8000;
     charset utf-8;
 
     server_name nostraplata.mobilidade.fm;
