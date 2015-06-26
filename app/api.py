@@ -40,7 +40,7 @@ class GroupMembersAPI(Resource):
 
     def get(self, id):
         members = Group.query.get(id).members
-        return {'members': marshal(members, member_fields)}
+        return marshal(members, member_fields)
 
 class LoansGivenAPI(Resource):
 
