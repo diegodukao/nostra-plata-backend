@@ -1,13 +1,14 @@
 #!flask/bin/python
-from flask import Flask, jsonify, abort, make_response
+from flask import jsonify, make_response
 from flask.ext.restful import Api, Resource, reqparse, fields, marshal
 from flask.ext.httpauth import HTTPBasicAuth
 
 from app import app, db
-from .models import User, Group, Loan
+from .models import Group, Loan
 
 api = Api(app)
 auth = HTTPBasicAuth()
+
 
 @auth.get_password
 def get_password(username):
@@ -15,13 +16,20 @@ def get_password(username):
         return 'python'
     return None
 
+
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
+
 @auth.error_handler
 def unauthorized():
     return make_response(jsonify({'error': 'Unauthorized access'}), 403)
+
+group_fields = {
+    'id': fields.Integer,
+    'name': fields.String,
+}
 
 member_fields = {
     'id': fields.Integer,
@@ -36,11 +44,32 @@ loan_fields = {
     'amount': fields.Integer,
 }
 
+
+class GroupAPI(Resource):
+
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument("name", type=str, required=True,
+           help="Group must have a name", location='json')
+        super(GroupAPI, self).__init__()
+
+    def post(self):
+        args = self.reqparse.parse_args()
+        group = Group(
+            name=args['name'],
+        )
+        db.session.add(group)
+        db.session.commit()
+
+        return {'group': marshal(group, group_fields)}
+
+
 class GroupMembersAPI(Resource):
 
     def get(self, id):
         members = Group.query.get(id).members
         return marshal(members, member_fields)
+
 
 class LoansGivenAPI(Resource):
 
@@ -52,6 +81,7 @@ class LoansGivenAPI(Resource):
 
         return {'loans_given': marshal(loans_given, loan_fields), 'total': total}
 
+
 class LoansGottenAPI(Resource):
 
     def get(self, debtor_id):
@@ -62,10 +92,11 @@ class LoansGottenAPI(Resource):
 
         return {'loans_gotten': marshal(loans_gotten, loan_fields), 'total': total}
 
+
 class LoanAPI(Resource):
 
     def __init__(self):
-        self.reqparse =reqparse.RequestParser()
+        self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('creditor_id', type=int, required=True,
                             help='No creditor_id provided', location='json')
         self.reqparse.add_argument('debtor_id', type=int, required=True,
@@ -90,6 +121,7 @@ class LoanAPI(Resource):
         return {'loan': marshal(loan, loan_fields)}
 
 
+api.add_resource(GroupAPI, '/api/v1.0/group', endpoint='group')
 api.add_resource(GroupMembersAPI, '/api/v1.0/group-members/<int:id>', endpoint='group-members')
 api.add_resource(LoansGivenAPI, '/api/v1.0/loans-given/<int:creditor_id>', endpoint='loans-given')
 api.add_resource(LoansGottenAPI, '/api/v1.0/loans-gotten/<int:debtor_id>', endpoint='loans-gotten')
