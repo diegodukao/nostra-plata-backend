@@ -1,20 +1,11 @@
 #!flask/bin/python
 from flask import jsonify, make_response
 from flask.ext.restful import Api, Resource, reqparse, fields, marshal
-from flask.ext.httpauth import HTTPBasicAuth
 
 from app import app, db
-from .models import Group, Loan
+from .models import Group, Loan, User
 
 api = Api(app)
-auth = HTTPBasicAuth()
-
-
-@auth.get_password
-def get_password(username):
-    if username == 'diego':
-        return 'python'
-    return None
 
 
 @app.errorhandler(404)
@@ -22,9 +13,11 @@ def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 
-@auth.error_handler
-def unauthorized():
-    return make_response(jsonify({'error': 'Unauthorized access'}), 403)
+user_fields = {
+    'id': fields.Integer,
+    'username': fields.String,
+    'name': fields.String,
+}
 
 group_fields = {
     'id': fields.Integer,
@@ -43,6 +36,30 @@ loan_fields = {
     'group_id': fields.Integer,
     'amount': fields.Integer,
 }
+
+
+class UserAPI(Resource):
+
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument("username", type=str, required=True,
+            help="Username can't be null", location='json')
+        self.reqparse.add_argument("password", type=str, required=True,
+            help="Password can't be null", location='json')
+        self.reqparse.add_argument("name", type=str, required=False)
+        super(UserAPI, self).__init__()
+
+    def post(self):
+        args = self.reqparse.parse_args()
+        user = User(
+            username=args['username'],
+            name=args['name'],
+        )
+        user.hash_password(args['password'])
+        db.session.add(user)
+        db.session.commit()
+
+        return {'user': marshal(user, user_fields)}
 
 
 class GroupAPI(Resource):
@@ -121,6 +138,7 @@ class LoanAPI(Resource):
         return {'loan': marshal(loan, loan_fields)}
 
 
+api.add_resource(UserAPI, '/api/v1.0/users', endpoint='users')
 api.add_resource(GroupAPI, '/api/v1.0/group', endpoint='group')
 api.add_resource(GroupMembersAPI, '/api/v1.0/group-members/<int:id>', endpoint='group-members')
 api.add_resource(LoansGivenAPI, '/api/v1.0/loans-given/<int:creditor_id>', endpoint='loans-given')
