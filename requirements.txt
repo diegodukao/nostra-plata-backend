@@ -21,6 +21,7 @@ ipaddress==1.0.7
 itsdangerous==0.24
 ndg-httpsclient==0.4.0
 paramiko==1.15.2
+passlib==1.6.5
 pbr==0.11.0
 pyOpenSSL==0.15.1
 pyasn1==0.1.7
